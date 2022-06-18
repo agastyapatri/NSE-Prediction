@@ -14,12 +14,9 @@ from torch import nn
 import pandas as pd
 import os
 
-from NSE_Prediction.src.Normalizer import Normalizer
+from NSE_Prediction.src.visualize_data import Visualizer
 
 style.use("ggplot")
-
-
-
 
 """---------------------------------------------------------------------------------------------------------------------
 Steps Taken in the modeling of the market:
@@ -32,11 +29,11 @@ Steps Taken in the modeling of the market:
 ---------------------------------------------------------------------------------------------------------------------"""
 
 
-
 class Model(nn.Module):
     """
     Defining the Model that will predict the price of the stock
     """
+
     def __init__(self, ratio, input_size, output_size, learning_rate, num_epochs, num_batches):
         super().__init__()
 
@@ -50,6 +47,7 @@ class Model(nn.Module):
     """---------------------------------------------------------------------------------------------------------------------
     1. Visualizing the Data, and Creating Tensors
     ---------------------------------------------------------------------------------------------------------------------"""
+
     def visualize_data(self, stock_data, ticker, feature, start_date, end_date):
         """
         Function to plot the data for the stock.
@@ -67,14 +65,12 @@ class Model(nn.Module):
         plt.ylabel(f"{feature}")
         plt.show()
 
-
     def to_tensor(self, stock_data):
         """
         Function to convert the pandas DataFrame Object to pytoch Tensor obeject. Takes in a DataFrame
         :return: Tensors and arrays
         """
-        train_indices = int(self.ratio*len(stock_data))
-
+        train_indices = int(self.ratio * len(stock_data))
 
         train_data = stock_data.iloc[:train_indices, 1:]
         validation_data = stock_data.iloc[train_indices:, 1:]
@@ -106,11 +102,6 @@ class Model(nn.Module):
         print(torch.mean(train_tensor))
 
 
-
-
-
-
-
 if __name__ == "__main__":
     """---------------------------------------------------------------------------------------------------------------------
     0. Getting Stock Price Data, and Preliminary Options
@@ -132,7 +123,7 @@ if __name__ == "__main__":
         stock_data = pd.read_csv(os.path.join(path, stock), parse_dates=True)
 
         # turning removing the index
-        stock_data.reset_index(inplace = True)
+        stock_data.reset_index(inplace=True)
 
         # Setting the date as the index
         stock_data.set_index("Date", inplace=True)
@@ -146,31 +137,9 @@ if __name__ == "__main__":
         ending_date = stock_data.index[-1]
         return stock_data, ticker, beginning_date, ending_date, features
 
+
     # RELIANCE stock price. THIS IS THE DATA TO BE FED INTO THE MODEL
     reliance, rel_ticker, beginning_date, ending_date, features = unpack_data(PATH, "RELIANCE")
 
-
-    model1 = Model(ratio=0.9, input_size=len(features), output_size=1, learning_rate=None, num_epochs=None, num_batches=None)
-
-
-    scaler = Normalizer(option="tensor")
-    normalized_train = scaler(torch.randn(5,6))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    model1 = Model(ratio=0.9, input_size=len(features), output_size=1, learning_rate=None, num_epochs=None,
+                   num_batches=None)

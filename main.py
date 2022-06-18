@@ -1,7 +1,11 @@
-from NSE_Prediction.src.Normalizer import Normalizer
+"""
+Main Class of the project
+"""
 import torch
+from src.visualize_data import Visualizer
 
-scaler = Normalizer(option="tensor")
+test_data = torch.randn(5,6)
 
-test = torch.randn(5,6)
-normalized_test = scaler.normalize(test)
+visualizer = Visualizer(stock_data=None, ticker=None, feature=None, start_date=None, end_date=None)
+visualizer.testmethod()
+
