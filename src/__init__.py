@@ -10,10 +10,10 @@ An init file can be blank. It is essneitally the constructor of the package.
 
 import sys
 sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/src/__init__.py")
-sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/src/NSEPred.py")
+sys.path.append("/NSE_Prediction/src/unpack_data.py")
 sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/src/normalizer.py")
 sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/src/visualize_data.py")
 
 from .visualize_data import *
-from .NSEPred import *
+from .unpack_data import *
 from .normalizer import *

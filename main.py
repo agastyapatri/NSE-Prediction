@@ -1,11 +1,44 @@
 """
-Main Class of the project
+Main content  of the project
 """
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
 import torch
+import torch.nn as nn
+import os
+
+# Custom Imports
 from src.visualize_data import Visualizer
+from src.normalizer import Normalize
+from src.unpack_data import Unpacking
 
-test_data = torch.randn(5,6)
 
-visualizer = Visualizer(stock_data=None, ticker=None, feature=None, start_date=None, end_date=None)
-visualizer.testmethod()
+
+class StockPrediction(nn.Module):
+    """
+    Main Class of the Project.
+    """
+
+    pass
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+    """
+    Runner Code
+    """
+
+
+
+
+
 
