@@ -1,7 +1,5 @@
 """
-NSE Stock Market Prediction, by Agastya Patri
-
-NASDA API key: 1t2bzSTzY75Wdv6T_y-g
+Class to enable the visualization of data
 """
 
 import numpy as np
@@ -17,6 +15,8 @@ class Unpacking(nn.Module):
         1. load_data()
         2. to_tensor()
         3. split_data()
+
+        Although to_tensor() also splits the data, split_data() is a method present for redundancy.
     """
 
     def __init__(self, PATH, ticker):
@@ -78,6 +78,10 @@ class Unpacking(nn.Module):
         stock_tensor = torch.tensor(np.array(stock_data), dtype=torch.float32)
 
         return stock_tensor, train_data, validation_data
+
+    @staticmethod
+    def testmethod():
+        print("Import Successful")
 
 if __name__ == "__main__":
 

@@ -16,11 +16,11 @@ from src.normalizer import Normalize
 from src.unpack_data import Unpacking
 
 
-
 class StockPrediction(nn.Module):
     """
     Main Class of the Project.
     """
+    super().__init__()
 
     pass
 
@@ -34,7 +34,7 @@ class StockPrediction(nn.Module):
 
 if __name__ == "__main__":
     """
-    Runner Code
+    Runner Code, Steps taken for the Process of 
     """
 
 
