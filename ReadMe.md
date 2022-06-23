@@ -1,7 +1,8 @@
 #  _Stock Market Prediction_ 
 
-_This project is inspired by the paper:_
-    Hiransha M et al. "NSE Stock Market Prediction Using Deep-Learning Models", ICCIDS 2018.
+_This project is inspired by the papers:_
+1. Hiransha M et al. "NSE Stock Market Prediction Using Deep-Learning Models", ICCIDS 2018.
+2. W Lu et al. "A CNN-LSTM-Based Model to Forecast Stock Prices", Wiley 2020.
 
 _This project will stay under development for the considerable future._
 ## 1. Introduction 

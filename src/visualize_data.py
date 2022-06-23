@@ -26,41 +26,51 @@ class Visualizer:
     end_date: date TO which plotting is desired
     """
 
-    def __init__(self, stock_data, ticker, features, start_date, end_date):
+    def __init__(self, stock_data, ticker, start_date, end_date):
         self.stock_data = stock_data
         self.ticker = ticker
-        self.features = features
         self.start_date = start_date
         self.end_date = end_date
 
 
-    def visualize(self):
+    def visualize(self, option, features):
         """
-        Function to cast the data into a usable format
-        :return: Required Plots
+        Function to view the data input as a raw DataFrame.
+        :param option: choose between "raw" and "transformed"
+        :param features: choose the features to plot.
         """
-        self.stock_data.index = pd.DatetimeIndex(self.stock_data.Date)
+        if option == "raw":
+            self.stock_data.index = pd.DatetimeIndex(self.stock_data.Date)
+        elif option == "transformed":
+            self.stock_data.index = pd.DatetimeIndex(self.stock_data.index)
 
         start = self.stock_data.index.searchsorted(self.start_date)
         end = self.stock_data.index.searchsorted(self.end_date)
 
         plt.title(f"Performance vs Time for the stock {self.ticker} from {self.start_date} to {self.end_date}")
-        for i in range(len(self.features)):
-            feature = self.features[i]
+        for i in range(len(features)):
+            feature = features[i]
             plt.plot(self.stock_data.index[start:end], self.stock_data[feature].iloc[start:end],
                      label = f"{feature} vs Time")
         plt.legend()
+        plt.grid(b=True, which="major", color="b", linestyle="-")
+        plt.grid(b=True, which="minor", color="b", linestyle="-", alpha=0.2)
+
         plt.show()
 
 
 
 
-    def OHLC(self):
+    def OHLC(self, option):
         """
         Function to plot the candlestick / OHLC graph
+        :param option: choose between "raw" and "transformed"
         """
 
-        self.stock_data.index = pd.DatetimeIndex(self.stock_data.Date)
+        if option == "raw":
+            self.stock_data.index = pd.DatetimeIndex(self.stock_data.Date )
+        elif option == "transformed":
+            self.stock_data.index = pd.DatetimeIndex(self.stock_data.index)
 
         start = self.stock_data.index.searchsorted(self.start_date)
         end = self.stock_data.index.searchsorted(self.end_date)
@@ -71,6 +81,9 @@ class Visualizer:
 
         plt.xlabel("Time (Years)")
         plt.ylabel("Price")
+        plt.grid(b=True, which="major", color="b", linestyle="-")
+        plt.grid(b=True, which="minor", color="b", linestyle="-", alpha=0.2)
+
         plt.show()
 
         
@@ -105,7 +118,8 @@ if __name__ == "__main__":
     test_data = pd.read_csv(os.path.join(PATH, file))
 
 
-    test = Visualizer(stock_data=test_data, ticker=ticker, features=["Adj Close", "Close"],
+    test = Visualizer(stock_data=test_data, ticker=ticker,
                       start_date="2021-01-01", end_date="2022-02-01")
+
 
 
