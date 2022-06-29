@@ -1,5 +1,5 @@
 """
-Main content  of the project
+Implementing all the steps of predictive modeling
 """
 
 # Global Imports
@@ -9,16 +9,15 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import os
-import yfinance
 
 # Custom Imports: transformations
 from src.visualize_data import Visualizer
 from src.unpack_data import Unpacking
 from src.model import  Model
-from src.normalizer import Normalize
 
 # Custom Imports: models
 from models.MLP import MultiLayerPerceptron
+from models.CNN import ConvolutionalNetwork
 
 
 
@@ -30,57 +29,53 @@ class StockPrediction(nn.Module):
         3. batches = number of batches in each training pass
     """
 
-    def __init__(self, num_epochs, learning_rate, batches, momentum):
+    def __init__(self, num_epochs, learning_rate, num_batches, momentum):
         super().__init__()
         self.num_epochs = num_epochs
         self.learning_rate = learning_rate
-        self.batches = batches
+        self.batches = num_batches
         self.momentum = momentum
+        self.criterion = nn.CrossEntropyLoss
 
 
-    def normalize(self, data):
+    def train_model(self, training_data, training_labels, net):
         """
-        Function to normalize the data fed to it
-        :param data: DataFrame  or Tensor or Array
-        :return: normalized data
+        Function to train the model in question
+        :param trainind_data: a torch tensor.
+        :return: trained model
         """
-        if isinstance(data, pd.DataFrame):
-            data = data.iloc[:, 1:]
-            mu = data.mean()
+        training_loss = []
+        train_accuracy_array = []
+        optimizer = torch.optim.SGD(net.parameters(), lr = self.learning_rate)
 
 
-        # elif isinstance(data, np.ndarray):
-        #     stock_data = torch.tensor(data)
-        # else:
-        #     stock_data = data.clone()
-        #
-        # mu = torch.mean(stock_data)
-
-
-        return mu[1]
+        # Looping over all the epochs
+        for epoch in range(self.num_epochs):
+            running_loss = 0.0
+            correct_count = 0
+            incorrect_count = 0
 
 
 
+            optimizer.zero_grad()
+            prediction = net(training_data)
+
+            # Training Loss + Backprop
+            with torch.autograd.set_detect_anomaly(True):
+
+                # finding loss
+                loss = self.criterion(prediction, training_labels)
+
+                # backpropagation
+                loss.backward(retain_graph = True)
+
+                # updating weights
+                optimizer.step()
+
+            print(loss)
 
 
-        #
-        #     stock_data = torch.from_numpy(np.array(stock_data))
-        #
-        # else:
-        #     stock_data = data[:,1:]
-        #     stock_data = torch.from_numpy(np.array(stock_data))
-        #
-        # mu = torch.mean(stock_data)
-        # sigma = torch.std(stock_data)
-        #
-        # scaled_data = (stock_data - mu) / sigma
 
-
-
-
-
-    def training(self):
-        pass
 
 
 
@@ -101,33 +96,63 @@ class StockPrediction(nn.Module):
 
 
 if __name__ == "__main__":
-    """
-    Runner Code. Defines all the data and the transformations made to it.
-    
-        1. Loading the data / Generating the training and validation datasets.
-        2. Visualizing the data
-        3. Normalizing and Preparing the data
-        4. Defining the Model
-        5. Training the Model
-        6. Hyperparameter optimization
-        7. Testing the data 
+
         
-    """
+    """-----------------------------------------------------------------------------------------------------------------
+    1. Preliminary Operations
+    -----------------------------------------------------------------------------------------------------------------"""
+
 
     path = "/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/data/"
     ticker = "RELIANCE"
-    model  = StockPrediction(num_epochs=100, learning_rate=0.001, batches=16, momentum=0.9)
+
+    CNN = ConvolutionalNetwork()
+
+    # The Prediction Model
+    MODEL  = StockPrediction(num_epochs=100, learning_rate=0.001, num_batches=None, momentum=0.9)
 
 
-    # 1. LOADING THE DATA
+
+
+    """-----------------------------------------------------------------------------------------------------------------
+    2. Loading the Data
+    -----------------------------------------------------------------------------------------------------------------"""
+
     unpacker = Unpacking(PATH=path, ticker=ticker)
-    reliance_data, beginning_date, ending_date, features = unpacker.load_data()
-    rel_tensor, rel_train, rel_validation = unpacker.to_tensor(reliance_data, 0.85)
+    total_reliance_data, beginning_date, ending_date, features = unpacker.load_data()
+    normed_reliance_data = unpacker.normalize_data(total_reliance_data)
 
 
-    # VISUALIZING THE DATA
-    visualizer = Visualizer(stock_data=reliance_data, ticker="RELIANCE",
-                            start_date="2020-01-01", end_date="2021-01-01")
+
+    """-----------------------------------------------------------------------------------------------------------------
+    3. Normalizing and Preparing the Data
+    -----------------------------------------------------------------------------------------------------------------"""
+
+    total_data = unpacker.split_data(normed_reliance_data, ratio=0.90, target_feature="Close")
+    normed_total_data = [ unpacker.normalize_data(dataobject) for dataobject in total_data ]
+
+    # 3. CONVERTING TO TORCH TENSORS
+    train_data, validation_data, train_target, validation_target = [ unpacker.to_tensor(dataobject)
+                                                                     for dataobject in normed_total_data]
+
+
+
+    # 4. VISUALIZING THE DATA
+    visualizer = Visualizer(stock_data=total_reliance_data, ticker="RELIANCE",
+                            start_date=beginning_date, end_date=ending_date)
+
+
+
+    """-----------------------------------------------------------------------------------------------------------------
+    5. Defining the Network
+    -----------------------------------------------------------------------------------------------------------------"""
+
+    # Defining the Multi Layer Perceptron
+    MLP = MultiLayerPerceptron(input_size=5, output_size=1, hidden_sizes=[5,4,3])
+    net = MLP.network()
+    MLP.testmethod()
+
+
 
 
 
@@ -135,21 +160,6 @@ if __name__ == "__main__":
 
 
     """----------------------------------------------TESTING THE IMPORTS---------------------------------------------"""
-    normalizer = Normalize(data = pd.DataFrame(np.random.randn(5,6)))
-    normalizer.fit_transform()
-
-
-
-
-
-
-
-    # Implementing the different steps required to train the data.
-
-
-
-
-
 
 
 

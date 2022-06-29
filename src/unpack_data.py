@@ -7,6 +7,7 @@ import torch
 from torch import nn
 import pandas as pd
 import os
+from torch.nn import functional
 
 
 class Unpacking(nn.Module):
@@ -52,46 +53,86 @@ class Unpacking(nn.Module):
         return stock_data, beginning_date, ending_date, features
 
 
-    def split_data(self, stock_data, ratio):
+
+    def split_data(self, stock_data, target_feature, ratio):
         """
-        Function to yield train and validation data from the input
+        Function to yield train and validation data from the input. Also returns the target variable
         :input: ratio: the ratio of train data to total data
-        :return: stock_data (DataFrame), train_data (DataFrame), validation_data (DataFrame)
+        :return: train_data, validation_data, train_target, validation_target
         """
         train_indices = int(ratio * len(stock_data))
+
+        target = stock_data[target_feature]
+        stock_data = stock_data.drop(target_feature, axis=1)
+
 
         train_data = stock_data.iloc[:train_indices, 1:]
         validation_data = stock_data.iloc[train_indices:, 1:]
 
-        return stock_data, train_data, validation_data
+        train_target = target[:train_indices]
+        validation_target = target[train_indices:]
 
 
-    def to_tensor(self, stock_data, ratio):
+
+        return train_data, validation_data, train_target, validation_target
+
+
+
+
+    def to_tensor(self, dataframe):
         """
-        Function to convert the pandas DataFrame Object to pytoch Tensor obeject. Takes in a DataFrame
+        Function to convert the pandas DataFrame Object to pytoch Tensor obeject
         :return: Tensors and arrays
         """
-        stock_data, train_data, validation_data = self.split_data(stock_data, ratio)
+        tensor = torch.tensor(dataframe.values)
+        return tensor
 
-        train_data = torch.tensor(np.array(train_data.values), dtype=torch.float32)
-        validation_data = torch.tensor(np.array(validation_data.values), dtype=torch.float32)
-        stock_tensor = torch.tensor(np.array(stock_data), dtype=torch.float32)
 
-        return stock_tensor, train_data, validation_data
 
-    @staticmethod
-    def testmethod():
-        print("Import Successful")
+    def normalize_data(self, dataframe):
+        """
+        Function to normalize the data fed into it
+        :param data: torch tensors
+        :return:
+        """
+        normed_dataframe = (dataframe - dataframe.mean()) / dataframe.std()
+        return normed_dataframe
+
+
+
+    def testmethod(self):
+        print("unpack_data is imported")
+
+
+
 
 if __name__ == "__main__":
 
-    """
+    """-----------------------------------------------------------------------------------------------------------------
     Testing the methods of the class, and the relations between the tensors
-    """
+    -----------------------------------------------------------------------------------------------------------------"""
 
-    unpack_test = Unpacking(PATH = "/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/data/", ticker = "RELIANCE")
-    test_data = unpack_test.load_data()[0]
-    test_tensors = unpack_test.to_tensor(test_data, 0.8)
+    unpacker = Unpacking(PATH ="/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/data/",
+                         ticker = "RELIANCE")
+
+    # LOADING THE DATA
+    total_reliance_data = unpacker.load_data()
+    reliance_data = total_reliance_data[0]
+    normed_reliance_data = unpacker.normalize_data(reliance_data)
+
+    # SPLITTING THE DATA and NORMALIZING
+    train_data, validation_data, train_target, validation_target = unpacker.split_data(normed_reliance_data, "Close", ratio=0.8)
+    normed_total_data = [unpacker.normalize_data(data) for data in [train_data, validation_data, train_target, validation_target] ]
+
+    # CONVERTING TO TENSORS
+    normed_tensor_data = [unpacker.to_tensor(data) for data in normed_total_data]
+
+
+
+
+
+
+
 
 
 
