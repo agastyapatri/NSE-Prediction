@@ -55,6 +55,9 @@ class MultiLayerPerceptron(nn.Module):
 
 
 if __name__ == "__main__":
+
+    """TESTING THE CODE IN THE MLP MODULE"""
+
     test_FFN = MultiLayerPerceptron(input_size=7, output_size=1, hidden_sizes=[5, 4, 3])
     test_data = torch.randn(10, 7)
 

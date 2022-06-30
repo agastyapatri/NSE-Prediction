@@ -1,5 +1,6 @@
 """
-Class to enable the visualization of data
+Class to enable the visualization of data. This module also enables the use of the Alpha Vantage Stock
+Price API.
 """
 
 import numpy as np
@@ -8,6 +9,8 @@ from torch import nn
 import pandas as pd
 import os
 from torch.nn import functional
+import alpha_vantage
+from alpha_vantage.timeseries import TimeSeries
 
 
 class Unpacking(nn.Module):

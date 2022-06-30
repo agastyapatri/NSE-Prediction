@@ -13,7 +13,8 @@ import os
 # Custom Imports: transformations
 from src.visualize_data import Visualizer
 from src.unpack_data import Unpacking
-from src.model import  Model
+from src.model import Model
+from src.configs import Configure
 
 # Custom Imports: models
 from models.MLP import MultiLayerPerceptron
@@ -35,7 +36,7 @@ class StockPrediction(nn.Module):
         self.learning_rate = learning_rate
         self.batches = num_batches
         self.momentum = momentum
-        self.criterion = nn.CrossEntropyLoss
+        self.criterion = nn.MSELoss
 
 
     def train_model(self, training_data, training_labels, net):
@@ -55,24 +56,13 @@ class StockPrediction(nn.Module):
             correct_count = 0
             incorrect_count = 0
 
-
-
             optimizer.zero_grad()
-            prediction = net(training_data)
 
-            # Training Loss + Backprop
-            with torch.autograd.set_detect_anomaly(True):
 
-                # finding loss
-                loss = self.criterion(prediction, training_labels)
 
-                # backpropagation
-                loss.backward(retain_graph = True)
 
-                # updating weights
-                optimizer.step()
 
-            print(loss)
+
 
 
 
@@ -96,27 +86,25 @@ class StockPrediction(nn.Module):
 
 
 if __name__ == "__main__":
+    """
+    1. Installing Python Dependencies
+    2. Data Preparation: acquiring financial market data from Alpha Vantage
+    3. Data Preparation: normalizing raw data
+    4. Defining the LSTM model 
+    5. Model Training
+    6. Model Evaluation 
+    7. Prediction future stock prices. 
+    """
 
-        
+
     """-----------------------------------------------------------------------------------------------------------------
-    1. Preliminary Operations
+    1. Loading the Data
     -----------------------------------------------------------------------------------------------------------------"""
-
-
     path = "/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/data/"
     ticker = "RELIANCE"
 
-    CNN = ConvolutionalNetwork()
-
-    # The Prediction Model
-    MODEL  = StockPrediction(num_epochs=100, learning_rate=0.001, num_batches=None, momentum=0.9)
 
 
-
-
-    """-----------------------------------------------------------------------------------------------------------------
-    2. Loading the Data
-    -----------------------------------------------------------------------------------------------------------------"""
 
     unpacker = Unpacking(PATH=path, ticker=ticker)
     total_reliance_data, beginning_date, ending_date, features = unpacker.load_data()
@@ -125,44 +113,38 @@ if __name__ == "__main__":
 
 
     """-----------------------------------------------------------------------------------------------------------------
-    3. Normalizing and Preparing the Data
+    2. Normalizing and Preparing the Data
     -----------------------------------------------------------------------------------------------------------------"""
 
     total_data = unpacker.split_data(normed_reliance_data, ratio=0.90, target_feature="Close")
     normed_total_data = [ unpacker.normalize_data(dataobject) for dataobject in total_data ]
 
-    # 3. CONVERTING TO TORCH TENSORS
-    train_data, validation_data, train_target, validation_target = [ unpacker.to_tensor(dataobject)
+    # CONVERTING TO TORCH TENSORS
+    train_data, validation_data, train_target, validation_target = [ unpacker.to_tensor(dataobject).float()
                                                                      for dataobject in normed_total_data]
 
 
 
-    # 4. VISUALIZING THE DATA
-    visualizer = Visualizer(stock_data=total_reliance_data, ticker="RELIANCE",
-                            start_date=beginning_date, end_date=ending_date)
+    # VISUALIZING THE DATA
+    visualizer = Visualizer(stock_data=total_reliance_data, ticker="RELIANCE", start_date=beginning_date,
+                            end_date=ending_date)
 
 
 
     """-----------------------------------------------------------------------------------------------------------------
-    5. Defining the Network
+    3. Defining the Network
     -----------------------------------------------------------------------------------------------------------------"""
 
-    # Defining the Multi Layer Perceptron
+    # Defining the Multi Layer Perceptron (MLP)
     MLP = MultiLayerPerceptron(input_size=5, output_size=1, hidden_sizes=[5,4,3])
-    net = MLP.network()
-    MLP.testmethod()
+    MLP_NET = MLP.network()
 
+    """-----------------------------------------------------------------------------------------------------------------
+    4. Implementing the training process 
+    -----------------------------------------------------------------------------------------------------------------"""
 
-
-
-
-
-
-
-    """----------------------------------------------TESTING THE IMPORTS---------------------------------------------"""
-
-
-
+    MODEL  = StockPrediction(num_epochs=10, learning_rate=0.001, num_batches=None, momentum=0.9)
+    MODEL.train_model(training_data=train_data, training_labels=train_target, net=MLP_NET)
 
 
 
