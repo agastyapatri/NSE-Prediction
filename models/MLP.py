@@ -1,6 +1,6 @@
-"""
+"""---------------------------------------------------------------------------------------------------------------------
 Class defining the Deep Feed Forward Network
-"""
+---------------------------------------------------------------------------------------------------------------------"""
 
 import torch
 import torch.nn as nn
@@ -32,19 +32,15 @@ class MultiLayerPerceptron(nn.Module):
         """
         network_MLP = nn.Sequential(
             # Input Layer
-            nn.Linear(self.input_size, self.hidden_sizes[0]),
+            nn.Linear(self.input_size, self.hidden_sizes[0], bias=False),
             nn.ReLU(),
 
             # Hidden Layer 1
-            nn.Linear(self.hidden_sizes[0], self.hidden_sizes[1]),
+            nn.Linear(self.hidden_sizes[0], self.hidden_sizes[1], bias=False),
             nn.ReLU(),
 
             # Hidden Layer 2
-            nn.Linear(self.hidden_sizes[1], self.hidden_sizes[2]),
-            nn.ReLU(),
-
-            # Hidden Layer 3
-            nn.Linear(self.hidden_sizes[2], self.output_size)
+            nn.Linear(self.hidden_sizes[1], self.output_size, bias=False)
         )
         return network_MLP
 
@@ -58,8 +54,40 @@ if __name__ == "__main__":
 
     """TESTING THE CODE IN THE MLP MODULE"""
 
-    test_FFN = MultiLayerPerceptron(input_size=7, output_size=1, hidden_sizes=[5, 4, 3])
-    test_data = torch.randn(10, 7)
+    test_MLP = MultiLayerPerceptron(input_size=5, output_size=1, hidden_sizes=[4, 3])
+    test_data = torch.randn(10, 5)
+    test_labels = torch.randn(10)
 
-    test_FFN.testmethod()
-    net = test_FFN.network()
+    test_MLP.testmethod()
+    net = test_MLP.network()
+
+    def test_train(epochs):
+        """
+        Function to test if the network is training
+        """
+        criterion = nn.MSELoss()
+        optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
+        running_loss = 0.0
+
+        optimizer.zero_grad()
+
+        for i in range(epochs):
+            predictions = net(test_data)[:,0]
+            with torch.autograd.set_detect_anomaly(True):
+                # calculating loss
+                loss = criterion(predictions, test_labels)
+
+                # backpropagation
+                loss.backward(retain_graph = True)
+
+                # updating weights
+                optimizer.step()
+
+
+
+
+
+
+
+
+

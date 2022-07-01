@@ -36,8 +36,8 @@ class StockPrediction(nn.Module):
         self.learning_rate = learning_rate
         self.batches = num_batches
         self.momentum = momentum
-        self.criterion = nn.MSELoss
-
+        self.criterion1 = nn.MSELoss()
+        self.criterion2 = nn.CrossEntropyLoss()
 
     def train_model(self, training_data, training_labels, net):
         """
@@ -56,7 +56,19 @@ class StockPrediction(nn.Module):
             correct_count = 0
             incorrect_count = 0
 
+            # resetting the gradient
             optimizer.zero_grad()
+            predictions = net(training_data)[:,0]
+
+            with torch.autograd.set_detect_anomaly(True):
+                pass
+
+
+
+            break
+
+        pass
+
 
 
 
@@ -144,7 +156,10 @@ if __name__ == "__main__":
     -----------------------------------------------------------------------------------------------------------------"""
 
     MODEL  = StockPrediction(num_epochs=10, learning_rate=0.001, num_batches=None, momentum=0.9)
-    MODEL.train_model(training_data=train_data, training_labels=train_target, net=MLP_NET)
+
+
+    # runmodel is a temporary function that will be called to test the train_model step
+    runmodel = lambda a : MODEL.train_model(training_data=train_data, training_labels=train_target, net=MLP_NET)
 
 
 
