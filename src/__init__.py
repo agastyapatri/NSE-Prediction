@@ -13,7 +13,11 @@ sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/sr
 sys.path.append("/NSE_Prediction/src/unpack_data.py")
 sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/src/visualize_data.py")
 sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/src/configs.py")
+sys.path.append("/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/src/trainer.py")
+
+
 
 from .visualize_data import *
 from .unpack_data import *
 from .configs import *
+from .trainer import *

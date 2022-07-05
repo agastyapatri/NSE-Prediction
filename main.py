@@ -13,7 +13,7 @@ import os
 # Custom Imports: transformations
 from src.visualize_data import Visualizer
 from src.unpack_data import Unpacking
-from src.model import Model
+from src.trainer import Train
 from src.configs import Configure
 
 # Custom Imports: models
@@ -49,29 +49,23 @@ class StockPrediction(nn.Module):
         train_accuracy_array = []
         optimizer = torch.optim.SGD(net.parameters(), lr = self.learning_rate)
 
-
-        # Looping over all the epochs
-        for epoch in range(self.num_epochs):
+        epoch = 0
+        while epoch < self.num_epochs:
             running_loss = 0.0
-            correct_count = 0
-            incorrect_count = 0
-
-            # resetting the gradient
+            Y = net(training_data)
+            Y_bar = training_labels
             optimizer.zero_grad()
-            predictions = net(training_data)[:,0]
 
             with torch.autograd.set_detect_anomaly(True):
-                pass
 
+                loss = self.criterion1(Y, Y_bar)
+                loss.backward(retain_graph = True)
+                optimizer.step()
 
+            running_loss += loss.item()
+            epoch += 1
 
             break
-
-        pass
-
-
-
-
 
 
 
@@ -165,4 +159,7 @@ if __name__ == "__main__":
 
 
 
+    """-----------------------------------------------------------------------------------------------------------------
+    Testing the imports 
+    -----------------------------------------------------------------------------------------------------------------"""
 
