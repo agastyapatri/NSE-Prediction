@@ -61,29 +61,6 @@ if __name__ == "__main__":
     test_MLP.testmethod()
     net = test_MLP.network()
 
-    def test_train(epochs):
-        """
-        Function to test if the network is training
-        """
-        criterion = nn.MSELoss()
-        optimizer = torch.optim.Adam(net.parameters(), lr=0.001)
-        running_loss = 0.0
-
-        optimizer.zero_grad()
-
-        for i in range(epochs):
-            predictions = net(test_data)[:,0]
-            with torch.autograd.set_detect_anomaly(True):
-                # calculating loss
-                loss = criterion(predictions, test_labels)
-
-                # backpropagation
-                loss.backward(retain_graph = True)
-
-                # updating weights
-                optimizer.step()
-
-
 
 
 

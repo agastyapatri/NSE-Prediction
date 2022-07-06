@@ -84,10 +84,10 @@ class Unpacking(nn.Module):
 
     def to_tensor(self, dataframe):
         """
-        Function to convert the pandas DataFrame Object to pytoch Tensor obeject
+        Function to convert the pandas DataFrame Object to pytoch Tensor object
         :return: Tensors and arrays
         """
-        tensor = torch.tensor(dataframe.values)
+        tensor = torch.tensor(dataframe.values, requires_grad=True)
         return tensor
 
 
