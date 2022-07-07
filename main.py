@@ -14,7 +14,6 @@ import os
 from src.visualize_data import Visualizer
 from src.unpack_data import Unpacking
 from src.trainer import Train
-from src.configs import Configure
 
 # Custom Imports: models
 from models.MLP import MultiLayerPerceptron
@@ -30,60 +29,27 @@ class StockPrediction(nn.Module):
         3. batches = number of batches in each training pass
     """
 
-    def __init__(self, num_epochs, learning_rate, num_batches, momentum):
-        super().__init__()
-        self.num_epochs = num_epochs
-        self.learning_rate = learning_rate
-        self.batches = num_batches
-        self.momentum = momentum
-        self.criterion1 = nn.MSELoss()
-        self.criterion2 = nn.CrossEntropyLoss()
+    def __init__(self, run, visualize):
+        super(StockPrediction, self).__init__()
+        self.run = run
+        self.visualize = visualize
 
-    def train_model(self, training_data, training_labels, net):
-        """
-        Function to train the model in question
-        :param trainind_data: a torch tensor.
-        :return: trained model
-        """
-        training_loss = []
-        train_accuracy_array = []
-        optimizer = torch.optim.SGD(net.parameters(), lr = self.learning_rate)
-
-        epoch = 0
-        while epoch < self.num_epochs:
-            running_loss = 0.0
-            Y = net(training_data)
-            Y_bar = training_labels
-            optimizer.zero_grad()
-
-            with torch.autograd.set_detect_anomaly(True):
-
-                loss = self.criterion1(Y, Y_bar)
-                loss.backward(retain_graph = True)
-                optimizer.step()
-
-            running_loss += loss.item()
-            epoch += 1
-
-            break
-
-
-
-
-
-
-
-
-
-
-    def validation(self):
+    def Load_Data(self):
+        # getting data from alpha vantage / local CSV files
         pass
 
-
-
-
-    def evaluation(self):
+    def Prepare_Data(self):
+        # normalizing the data
         pass
+
+    def Define_Model(self):
+        pass
+
+    def Train_Model(self):
+        pass
+
+    def Evaluate_Model(self):
+        return None
 
 
 
@@ -102,64 +68,22 @@ if __name__ == "__main__":
     7. Prediction future stock prices. 
     """
 
+    stockpred = StockPrediction(run=True, visualize = True)
 
-    """-----------------------------------------------------------------------------------------------------------------
-    1. Loading the Data
-    -----------------------------------------------------------------------------------------------------------------"""
-    path = "/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/data/"
-    ticker = "RELIANCE"
+    if stockpred.run == True :
+        print("Running the Model")
+        stockpred.Load_Data()
+        stockpred.Prepare_Data()
 
+        if stockpred.visualize == True:
+            stockpred.Visualize_Data()
 
-
-
-    unpacker = Unpacking(PATH=path, ticker=ticker)
-    total_reliance_data, beginning_date, ending_date, features = unpacker.load_data()
-    normed_reliance_data = unpacker.normalize_data(total_reliance_data)
-
-
-
-    """-----------------------------------------------------------------------------------------------------------------
-    2. Normalizing and Preparing the Data
-    -----------------------------------------------------------------------------------------------------------------"""
-
-    total_data = unpacker.split_data(normed_reliance_data, ratio=0.90, target_feature="Close")
-    normed_total_data = [ unpacker.normalize_data(dataobject) for dataobject in total_data ]
-
-    # CONVERTING TO TORCH TENSORS
-    train_data, validation_data, train_target, validation_target = [ unpacker.to_tensor(dataobject).float()
-                                                                     for dataobject in normed_total_data]
-
-
-
-    # VISUALIZING THE DATA
-    visualizer = Visualizer(stock_data=total_reliance_data, ticker="RELIANCE", start_date=beginning_date,
-                            end_date=ending_date)
-
-
-
-    """-----------------------------------------------------------------------------------------------------------------
-    3. Defining the Network
-    -----------------------------------------------------------------------------------------------------------------"""
-
-    # Defining the Multi Layer Perceptron (MLP)
-    MLP = MultiLayerPerceptron(input_size=5, output_size=1, hidden_sizes=[5,4,3])
-    MLP_NET = MLP.network()
-
-    """-----------------------------------------------------------------------------------------------------------------
-    4. Implementing the training process 
-    -----------------------------------------------------------------------------------------------------------------"""
-
-    MODEL  = StockPrediction(num_epochs=10, learning_rate=0.001, num_batches=None, momentum=0.9)
-
-
-    # runmodel is a temporary function that will be called to test the train_model step
-    runmodel = lambda a : MODEL.train_model(training_data=train_data, training_labels=train_target, net=MLP_NET)
+        stockpred.Define_Model()
+        stockpred.Train_Model()
+        stockpred.Evaluate_Model()
 
 
 
 
 
-    """-----------------------------------------------------------------------------------------------------------------
-    Testing the imports 
-    -----------------------------------------------------------------------------------------------------------------"""
 

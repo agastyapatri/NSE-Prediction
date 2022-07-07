@@ -31,6 +31,8 @@ class Train(nn.Module):
             self.criterion = nn.CrossEntropyLoss()
         elif criterion == "NLL":
             self.criterion = nn.NLLLoss()
+        else:
+            raise Exception("Not a valid Criterion. Choose between MSE, CEL and NLL")
 
 
         # defining the optimizer
@@ -40,12 +42,15 @@ class Train(nn.Module):
         elif optimizer == "SGD":
             self.optimizer = lambda network : torch.optim.SGD(params=network.parameters(),
                                                               lr = self.learning_rate)
+        else:
+            raise Exception("Not a valid optimizer. Choose between Adam and SGD")
 
 
 
 
     # Function to train any model that is fed to it
     def trainmodel(self, network, train_data, train_labels, save = None):
+
         """
         :param network: The network used to predict
         :param train_data: train data
@@ -75,7 +80,7 @@ class Train(nn.Module):
             loss = self.criterion(y_pred, y_true)
 
             # backward pass: computing gradients
-            loss.backward()
+            loss.backward(retain_graph=True)
 
             with torch.no_grad():
 
@@ -84,9 +89,16 @@ class Train(nn.Module):
 
             running_loss += loss.item()
 
-            # printing the loss at every 50th epoch
+            # Calculating the training accuracy
+            bool_array = np.array(y_pred == y_true)
+            num_correct, num_incorrect = np.count_nonzero(bool_array), len(train_data) - np.count_nonzero(bool_array)
+            accuracy = num_correct/(num_correct + num_incorrect)
+            train_accuracy_array.append(accuracy)
+
+            # printing the loss at every 100th epoch
             if epoch % 100 == 99:
-                print(f"Training Loss at epoch: {epoch} is {running_loss}")
+                print(f"Epoch {epoch}: Train Loss = {running_loss/len(train_data)}; Train Accuracy = {accuracy}")
+
 
 
 
@@ -111,14 +123,13 @@ if __name__ == "__main__":
 
         # Hidden Layer -> Output Layer
         nn.Linear(500, 1, bias=True),
-
     )
 
-    # randomly sampling data from the normal distribution of (mu, sigma) = (0, 0.1)
-    # traindata = torch.tensor(np.random.normal(0, 0.1, 1000) ).float()
 
-    traindata = torch.randn(1000, 1000)
-    trainlabels = torch.zeros(1000, 1)
+    # train_data: 100 samples, 1000 features/sample. train_labels: 100 labels.
+    traindata = torch.randn(100, 1000)
+    trainlabels = torch.zeros(100, 1)
+
 
     # randomly sampling data from the normal distribution of (mu, sigma) = (1, 0.1)
     testdata = torch.tensor(np.random.normal(1, 0.1, 10000)).float()
@@ -126,6 +137,6 @@ if __name__ == "__main__":
 
 
     # defining the trainer
-    trainer = Train(num_epochs=1000, learning_rate=1e-7, optimizer="SGD", criterion="MSE")
-    trainer.trainmodel(network=testnetwork, train_data=traindata, train_labels=trainlabels, save = None)
+    trainer = Train(num_epochs=1000, learning_rate=1e-6, optimizer="SGD", criterion="MSE")
+    a = trainer.trainmodel(network=testnetwork, train_data=traindata, train_labels=trainlabels, save = None)
 
