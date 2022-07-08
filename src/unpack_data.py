@@ -5,7 +5,7 @@ Price API.
 
 import numpy as np
 import torch
-from torch import nn
+import torch.nn as nn
 import pandas as pd
 import os
 from torch.nn import functional
@@ -23,11 +23,50 @@ class Unpacking(nn.Module):
         Although to_tensor() also splits the data, split_data() is a method present for redundancy.
     """
 
+    # configurations for alphavantage
+
+
     def __init__(self, PATH, ticker):
         super().__init__()
 
         self.PATH = PATH
         self.ticker = ticker
+        self.config = {
+            "stock_data": {
+                "key": "GDI9ZV8GLVFEAV9G",
+                "ticker": "IBM",
+                "outputsize": "full",
+                "key_adjusted_close": "5. adjusted close",
+            },
+
+            "data": {
+                "window_size": 20,
+                "train_split_size": 0.80,
+            }
+        }
+
+
+
+    def alpha_vantage(self):
+        """
+        Function to access the Alpha Vantage stock data API, and return a Dataframe
+        """
+
+        ts = TimeSeries(key = self.config["stock_data"]["key"])
+        data, meta_data = ts.get_daily(self.config["stock_data"]["ticker"],
+                                                outputsize=self.config["stock_data"]["outputsize"])
+
+        dates = list(data.keys())
+        values = list(data.values())
+
+        dataframe = pd.DataFrame(columns = ["Open", "High", "Low", "Close", "Volume"], index=dates)
+
+        for i in range(len(values)):
+            vals = list(values[i].values())
+            dataframe.iloc[i,:] = vals
+
+
+        return dataframe
 
 
     def load_data(self):
@@ -87,7 +126,7 @@ class Unpacking(nn.Module):
         Function to convert the pandas DataFrame Object to pytoch Tensor object
         :return: Tensors and arrays
         """
-        tensor = torch.tensor(dataframe.values, requires_grad=True)
+        tensor = torch.tensor(dataframe.values)
         return tensor
 
 
@@ -112,7 +151,7 @@ class Unpacking(nn.Module):
 if __name__ == "__main__":
 
     """-----------------------------------------------------------------------------------------------------------------
-    Testing the methods of the class, and the relations between the tensors
+    Testing the methods of the class, 
     -----------------------------------------------------------------------------------------------------------------"""
 
     unpacker = Unpacking(PATH ="/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/data/",
@@ -130,6 +169,12 @@ if __name__ == "__main__":
     # CONVERTING TO TENSORS
     normed_tensor_data = [unpacker.to_tensor(data) for data in normed_total_data]
 
+
+    """-----------------------------------------------------------------------------------------------------------------
+    Testing AlphaVantage 
+    -----------------------------------------------------------------------------------------------------------------"""
+    a = unpacker.alphavantagetest()
+    a_normed = unpacker.normalize_data(a)
 
 
 

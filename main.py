@@ -34,7 +34,7 @@ class StockPrediction(nn.Module):
         self.run = run
         self.visualize = visualize
 
-    def Load_Data(self):
+    def Load_Data(self, path):
         # getting data from alpha vantage / local CSV files
         pass
 
@@ -68,11 +68,13 @@ if __name__ == "__main__":
     7. Prediction future stock prices. 
     """
 
-    stockpred = StockPrediction(run=True, visualize = True)
+    stockpred = StockPrediction(run = True, visualize = True)
 
+
+    # Running the Model
     if stockpred.run == True :
         print("Running the Model")
-        stockpred.Load_Data()
+        stockpred.Load_Data(path = None)
         stockpred.Prepare_Data()
 
         if stockpred.visualize == True:
