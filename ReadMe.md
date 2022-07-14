@@ -54,13 +54,19 @@ Following are a few caveats:
 4. To check if the model is able to generalize common stock market
    dynamics, the model is also tested on the **NYSE**
 
-* The code was written as generally as possible, with a trial application to RELIANCE.
-
+5. The code was written as generally as possible, with a trial application on IBM.
 
 
 ## 3. Results
 This section details the performance of each model architecture. Based on the metrics, chosen 
 it is expected that the **LSTM** will perform optimally.
+
+### 3.1 Base Performance: MultiLayer Perceptron 
+* Training Error: 
+* Validation Error: 
+* 
+
+
 
 ## 3. Notes
 * There was no need to flatten the tensors, because each 

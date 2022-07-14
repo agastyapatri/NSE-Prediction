@@ -31,39 +31,27 @@ class Unpacking(nn.Module):
 
         self.PATH = PATH
         self.ticker = ticker
-        self.config = {
-            "stock_data": {
-                "key": "GDI9ZV8GLVFEAV9G",
-                "ticker": "IBM",
-                "outputsize": "full",
-                "key_adjusted_close": "5. adjusted close",
-            },
-
-            "data": {
-                "window_size": 20,
-                "train_split_size": 0.80,
-            }
-        }
 
 
 
-    def alpha_vantage(self):
+
+    def alpha_vantage_data(self, outputsize):
         """
         Function to access the Alpha Vantage stock data API, and return a Dataframe
         """
 
-        ts = TimeSeries(key = self.config["stock_data"]["key"])
-        data, meta_data = ts.get_daily(self.config["stock_data"]["ticker"],
-                                                outputsize=self.config["stock_data"]["outputsize"])
+        ts = TimeSeries(key = self.ticker)
+        data, meta_data = ts.get_daily(self.ticker, outputsize="full")
 
         dates = list(data.keys())
         values = list(data.values())
 
-        dataframe = pd.DataFrame(columns = ["Open", "High", "Low", "Close", "Volume"], index=dates)
+        dataframe = pd.DataFrame(columns = ["Open", "High", "Low", "Close", "Volume"], index=dates, dtype=np.float64)
 
         for i in range(len(values)):
             vals = list(values[i].values())
             dataframe.iloc[i,:] = vals
+        dataframe = dataframe.astype(np.float64)
 
 
         return dataframe
@@ -96,49 +84,65 @@ class Unpacking(nn.Module):
 
 
 
-    def split_data(self, stock_data, target_feature, ratio):
-        """
-        Function to yield train and validation data from the input. Also returns the target variable
-        :input: ratio: the ratio of train data to total data
-        :return: train_data, validation_data, train_target, validation_target
-        """
-        train_indices = int(ratio * len(stock_data))
-
-        target = stock_data[target_feature]
-        stock_data = stock_data.drop(target_feature, axis=1)
-
-
-        train_data = stock_data.iloc[:train_indices, 1:]
-        validation_data = stock_data.iloc[train_indices:, 1:]
-
-        train_target = target[:train_indices]
-        validation_target = target[train_indices:]
-
-
-
-        return train_data, validation_data, train_target, validation_target
-
-
-
-
-    def to_tensor(self, dataframe):
+    def to_tensor(self, dataframe, normalize=False):
         """
         Function to convert the pandas DataFrame Object to pytoch Tensor object
         :return: Tensors and arrays
         """
-        tensor = torch.tensor(dataframe.values)
+        tensor = torch.tensor(dataframe.values, dtype=torch.float64)
+        if normalize==True:
+            tensor = functional.normalize(tensor, p=2.0, dim=1)
+
         return tensor
 
 
 
-    def normalize_data(self, dataframe):
+    def split_data(self, stock_data, target, ratio):
+        """
+        Function to yield train and validation data from the input. Also returns the target variable
+        :param target_index: column index of the feature desired to be dropped.
+        :param ratio: the ratio intended in the train-test-split
+        :return: train_data, validation_data, train_target, validation_target
+        """
+        stock_tensor = self.to_tensor(stock_data, normalize=True)
+
+
+        feature_data = stock_data.drop([target], axis = 1)
+        target_data = stock_data[target]
+        train_indices = int(ratio * len(stock_data))
+
+        # converting to tensors
+        feature_tensor = self.to_tensor(feature_data, normalize=True)
+        target_tensor = self.to_tensor(feature_data, normalize=True)
+
+        train_data_tensor = feature_tensor[:train_indices, :]
+        validation_data_tensor = target_tensor[train_indices:, :]
+
+        train_target_tensor = target_tensor[:train_indices]
+        validation_target_tensor = target_tensor[train_indices:]
+
+
+
+        return train_data_tensor, validation_data_tensor, train_target_tensor, validation_target_tensor
+
+
+
+
+    def normalize_data(self, data):
         """
         Function to normalize the data fed into it
         :param data: torch tensors
         :return:
         """
-        normed_dataframe = (dataframe - dataframe.mean()) / dataframe.std()
-        return normed_dataframe
+        if isinstance(data, pd.DataFrame):
+            data.reset_index(drop=True, inplace=True)
+            normed_data = (data  - data.mean()) / data.std()
+
+        elif isinstance(data, torch.Tensor):
+            normed_data = torch.mean(data)[0]
+
+        return data
+
 
 
 
@@ -154,33 +158,13 @@ if __name__ == "__main__":
     Testing the methods of the class, 
     -----------------------------------------------------------------------------------------------------------------"""
 
-    unpacker = Unpacking(PATH ="/home/agastya123/PycharmProjects/DeepLearning/NSE_Prediction/data/",
-                         ticker = "RELIANCE")
-
+    unpacker = Unpacking(PATH=None, ticker="IBM")
     # LOADING THE DATA
-    total_reliance_data = unpacker.load_data()
-    reliance_data = total_reliance_data[0]
-    normed_reliance_data = unpacker.normalize_data(reliance_data)
 
-    # SPLITTING THE DATA and NORMALIZING
-    train_data, validation_data, train_target, validation_target = unpacker.split_data(normed_reliance_data, "Close", ratio=0.8)
-    normed_total_data = [unpacker.normalize_data(data) for data in [train_data, validation_data, train_target, validation_target] ]
+    total_ibm_data = unpacker.alpha_vantage_data(outputsize="full")
 
-    # CONVERTING TO TENSORS
-    normed_tensor_data = [unpacker.to_tensor(data) for data in normed_total_data]
-
-
-    """-----------------------------------------------------------------------------------------------------------------
-    Testing AlphaVantage 
-    -----------------------------------------------------------------------------------------------------------------"""
-    a = unpacker.alphavantagetest()
-    a_normed = unpacker.normalize_data(a)
-
-
-
-
-
-
+    # train_data, validation_data, train_target, validation_target
+    train_test_split = unpacker.split_data(stock_data=total_ibm_data, target="Close", ratio=0.8)
 
 
 

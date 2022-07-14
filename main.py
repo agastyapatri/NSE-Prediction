@@ -11,13 +11,15 @@ import torch.nn as nn
 import os
 
 # Custom Imports: transformations
-from src.visualize_data import Visualizer
 from src.unpack_data import Unpacking
-from src.trainer import Train
+from src.visualize_data import Visualizer
 
 # Custom Imports: models
 from models.MLP import MultiLayerPerceptron
 from models.CNN import ConvolutionalNetwork
+
+# Custom Imports: Training + Testing
+from src.trainer import Train
 
 
 
@@ -34,13 +36,21 @@ class StockPrediction(nn.Module):
         self.run = run
         self.visualize = visualize
 
-    def Load_Data(self, path):
-        # getting data from alpha vantage / local CSV files
-        pass
 
-    def Prepare_Data(self):
-        # normalizing the data
-        pass
+    def Load_Data(self):
+        # getting data from alpha vantage / local CSV files
+
+        loader = Unpacking(PATH=None, ticker="IBM")
+        stockdata = loader.alpha_vantage_data(outputsize="full")
+        stockdata = loader.load_data()
+        stock_split = loader.split_data(stock_tensor=stockdata, target_feature="Close", ratio=0.85)
+
+        normed_IBM_data = loader.normalize_data(stockdata)
+
+
+
+        return normed_IBM_data
+
 
     def Define_Model(self):
         pass
@@ -68,21 +78,20 @@ if __name__ == "__main__":
     7. Prediction future stock prices. 
     """
 
-    stockpred = StockPrediction(run = True, visualize = True)
+    stockpred = StockPrediction(run = True, visualize = None)
 
 
     # Running the Model
     if stockpred.run == True :
         print("Running the Model")
-        stockpred.Load_Data(path = None)
-        stockpred.Prepare_Data()
-
-        if stockpred.visualize == True:
-            stockpred.Visualize_Data()
-
-        stockpred.Define_Model()
-        stockpred.Train_Model()
-        stockpred.Evaluate_Model()
+        ibm = stockpred.Load_Data()
+        #
+        # if stockpred.visualize == True:
+        #     stockpred.Visualize_Data()
+        #
+        # stockpred.Define_Model()
+        # stockpred.Train_Model()
+        # stockpred.Evaluate_Model()
 
 
 
