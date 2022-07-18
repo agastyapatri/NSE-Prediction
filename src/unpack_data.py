@@ -84,51 +84,20 @@ class Unpacking(nn.Module):
 
 
 
-    def to_tensor(self, dataframe, normalize=False):
+    def to_tensor(self, dataframe, normalize=False, dimension=None):
         """
         Function to convert the pandas DataFrame Object to pytoch Tensor object
         :return: Tensors and arrays
         """
         tensor = torch.tensor(dataframe.values, dtype=torch.float64)
         if normalize==True:
-            tensor = functional.normalize(tensor, p=2.0, dim=1)
+            tensor = functional.normalize(tensor, p=2.0, dim=dimension)
 
         return tensor
 
 
 
-    def split_data(self, stock_data, target, ratio):
-        """
-        Function to yield train and validation data from the input. Also returns the target variable
-        :param target_index: column index of the feature desired to be dropped.
-        :param ratio: the ratio intended in the train-test-split
-        :return: train_data, validation_data, train_target, validation_target
-        """
-        stock_tensor = self.to_tensor(stock_data, normalize=True)
-
-
-        feature_data = stock_data.drop([target], axis = 1)
-        target_data = stock_data[target]
-        train_indices = int(ratio * len(stock_data))
-
-        # converting to tensors
-        feature_tensor = self.to_tensor(feature_data, normalize=True)
-        target_tensor = self.to_tensor(feature_data, normalize=True)
-
-        train_data_tensor = feature_tensor[:train_indices, :]
-        validation_data_tensor = target_tensor[train_indices:, :]
-
-        train_target_tensor = target_tensor[:train_indices]
-        validation_target_tensor = target_tensor[train_indices:]
-
-
-
-        return train_data_tensor, validation_data_tensor, train_target_tensor, validation_target_tensor
-
-
-
-
-    def normalize_data(self, data):
+    def normalize_data(self, data, dimension=None):
         """
         Function to normalize the data fed into it
         :param data: torch tensors
@@ -139,9 +108,42 @@ class Unpacking(nn.Module):
             normed_data = (data  - data.mean()) / data.std()
 
         elif isinstance(data, torch.Tensor):
-            normed_data = torch.mean(data)[0]
+            normed_data = functional.normalize(data, p=2.0, dim=dimension)
 
         return data
+
+
+    def split_data(self, stock_data, target, ratio, norm=False):
+        """
+        Function to yield train and validation data from the input. Also returns the target variable
+        :param target_index: column index of the feature desired to be dropped.
+        :param ratio: the ratio intended in the train-test-split
+        :return: train_data_tensor, train_target_tensor, validation_data_tensor, validation_target_tensor
+        """
+
+        stock_tensor = self.to_tensor(stock_data, normalize=norm, dimension=1)
+
+
+        feature_data = stock_data.drop([target], axis = 1)
+        target_data = stock_data[target]
+        train_indices = int(ratio * len(stock_data))
+
+        # converting to tensors
+        feature_tensor = self.to_tensor(feature_data)
+        target_tensor = self.to_tensor(target_data)
+        target_tensor = self.normalize_data(target_tensor)
+
+        train_data_tensor = feature_tensor[:train_indices, :]
+        validation_data_tensor = feature_tensor[train_indices:, :]
+
+        train_target_tensor = target_tensor[:train_indices]
+        validation_target_tensor = target_tensor[train_indices:]
+
+
+        return train_data_tensor, train_target_tensor, validation_data_tensor, validation_target_tensor
+
+
+
 
 
 
@@ -159,12 +161,13 @@ if __name__ == "__main__":
     -----------------------------------------------------------------------------------------------------------------"""
 
     unpacker = Unpacking(PATH=None, ticker="IBM")
+
     # LOADING THE DATA
+    IBM = unpacker.alpha_vantage_data(outputsize="full")
 
-    total_ibm_data = unpacker.alpha_vantage_data(outputsize="full")
+    train_data, train_target, validation_data, validation_target = unpacker.split_data(IBM, target="Close",
+                                                                                       ratio=0.8, norm=True)
 
-    # train_data, validation_data, train_target, validation_target
-    train_test_split = unpacker.split_data(stock_data=total_ibm_data, target="Close", ratio=0.8)
 
 
 

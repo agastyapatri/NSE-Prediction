@@ -41,26 +41,24 @@ class StockPrediction(nn.Module):
         # getting data from alpha vantage / local CSV files
 
         loader = Unpacking(PATH=None, ticker="IBM")
-        stockdata = loader.alpha_vantage_data(outputsize="full")
-        stockdata = loader.load_data()
-        stock_split = loader.split_data(stock_tensor=stockdata, target_feature="Close", ratio=0.85)
+        IBM = loader.alpha_vantage_data(outputsize="full")
+        IBM_split = loader.split_data(IBM, target="Close", ratio=0.85, norm=True)
 
-        normed_IBM_data = loader.normalize_data(stockdata)
-
-
-
-        return normed_IBM_data
+        return IBM_split
 
 
     def Define_Model(self):
-        pass
+        model = MultiLayerPerceptron(input_size=4, output_size=1, hidden_sizes=[3,2])
+        network = model.network()
+        return network
+
 
     def Train_Model(self):
+        net = self.Define_Model()
         pass
 
     def Evaluate_Model(self):
         return None
-
 
 
 
@@ -78,18 +76,24 @@ if __name__ == "__main__":
     7. Prediction future stock prices. 
     """
 
-    stockpred = StockPrediction(run = True, visualize = None)
+    stockpred = StockPrediction(run = True, visualize = False)
 
 
     # Running the Model
     if stockpred.run == True :
         print("Running the Model")
         ibm = stockpred.Load_Data()
-        #
+        train_data, train_target, test_data, test_target = ibm
+
+        net = stockpred.Define_Model()
+
+
+
+
         # if stockpred.visualize == True:
         #     stockpred.Visualize_Data()
         #
-        # stockpred.Define_Model()
+
         # stockpred.Train_Model()
         # stockpred.Evaluate_Model()
 
